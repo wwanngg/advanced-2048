@@ -13,8 +13,11 @@ qt_add_executable(advanced-2048
     src/main.cpp
     src/mainwindow.cpp
     src/KeyboardHandler.cpp
+    src/settingsdialog.cpp
+    src/windowsetting.cpp
     include/mainwindow.h
     include/KeyboardHandler.h
+    include/settingsdialog.h
     include/constants.h
 )
 

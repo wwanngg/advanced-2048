@@ -17,10 +17,14 @@ MainWindow::MainWindow(QWidget *parent)
     , m_intMap(4, QVector<int>(4))
     , m_labelMap(4, QVector<QLabel*>(4))
     , m_score(0)
-    , m_animationRunning(false) {
+    , m_animationRunning(false)
+    , m_settingsDialog(nullptr)
+    , m_gametype(GameType::number) {
+    createMenuBar();
+    loadSettings();
     setupUI();
     setupAnimations();
-
+    
     qApp->installEventFilter(m_keyboardHandler);
 }
 
@@ -63,7 +67,7 @@ void MainWindow::setupUI() {
     group->start();
     
     setWindowTitle("2048 Score: 0");
-    setFixedSize(Constants::windowSize, Constants::windowSize);
+    setFixedSize(Constants::windowSize, Constants::windowSize + menuBar->height());
 }
 
 void MainWindow::setupAnimations() {
@@ -200,7 +204,11 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyA() {
                         m_labelMap[i][target]->setText(QString::number(m_intMap[i][target]));
                         int styleIndex = m_intMap[i][target] >= Constants::maxUsedNum ? 
                             Constants::maxUsedNum : m_intMap[i][target];
-                        m_labelMap[i][target]->setStyleSheet(Constants::styles[styleIndex]);
+                        if (m_gametype == GameType::number) {
+                            m_labelMap[i][target]->setStyleSheet(Constants::styles[styleIndex]);
+                        } else if (m_gametype == GameType::caixukun) {
+                            m_labelMap[i][target]->setStyleSheet(Constants::caixukunStyles[styleIndex]);
+                        }
                     }
                     m_score += m_intMap[i][target];
                     merged[i][target] = true;
@@ -316,7 +324,12 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyD() {
                         m_labelMap[i][target]->setText(QString::number(m_intMap[i][target]));
                         int styleIndex = m_intMap[i][target] >= Constants::maxUsedNum ? 
                             Constants::maxUsedNum : m_intMap[i][target];
-                        m_labelMap[i][target]->setStyleSheet(Constants::styles[styleIndex]);
+                        if (m_gametype == GameType::number) {
+                            m_labelMap[i][target]->setStyleSheet(Constants::styles[styleIndex]);
+                        } else if (m_gametype == GameType::caixukun) {
+                            m_labelMap[i][target]->setStyleSheet(Constants::caixukunStyles[styleIndex]);
+                        }
+                        
                     }
                     m_score += m_intMap[i][target];
                     merged[i][target] = true;
@@ -430,7 +443,12 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyW() {
                         m_labelMap[target][j]->setText(QString::number(m_intMap[target][j]));
                         int styleIndex = m_intMap[target][j] >= Constants::maxUsedNum ? 
                             Constants::maxUsedNum : m_intMap[target][j];
-                        m_labelMap[target][j]->setStyleSheet(Constants::styles[styleIndex]);
+                        if (m_gametype == GameType::number) {
+                            m_labelMap[target][j]->setStyleSheet(Constants::styles[styleIndex]);
+                        } else if (m_gametype == GameType::caixukun) {
+                            m_labelMap[target][j]->setStyleSheet(Constants::caixukunStyles[styleIndex]);
+                        }
+                        
                     }
                     m_score += m_intMap[target][j];
                     merged[target][j] = true;
@@ -545,7 +563,12 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyS() {
                         m_labelMap[target][j]->setText(QString::number(m_intMap[target][j]));
                         int styleIndex = m_intMap[target][j] >= Constants::maxUsedNum ? 
                             Constants::maxUsedNum : m_intMap[target][j];
-                        m_labelMap[target][j]->setStyleSheet(Constants::styles[styleIndex]);
+                        if (m_gametype == GameType::number) {
+                            m_labelMap[target][j]->setStyleSheet(Constants::styles[styleIndex]);
+                        } else if (m_gametype == GameType::caixukun) {
+                            m_labelMap[target][j]->setStyleSheet(Constants::caixukunStyles[styleIndex]);
+                        }
+                        
                     }
                     m_score += m_intMap[target][j];
                     merged[target][j] = true;
@@ -623,8 +646,15 @@ QParallelAnimationGroup* MainWindow::createRandom() {
     int num = QRandomGenerator::global()->bounded(2) == 0 ? 2 : 4;
 
     QLabel* label = new QLabel(QString::number(num), m_centralWidget);
-    label->setStyleSheet(Constants::styles[num]);
-    label->setAlignment(Qt::AlignCenter);
+    if (m_gametype == GameType::number) {
+        label->setStyleSheet(Constants::styles[num]);
+        label->setAlignment(Qt::AlignCenter);
+    } else if (m_gametype == GameType::caixukun) {
+        label->setStyleSheet(Constants::caixukunStyles[num]);
+        label->setAlignment(Qt::AlignBottom | Qt::AlignRight);
+    }
+    
+    
     label->setWindowOpacity(0.0);
     
     QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
