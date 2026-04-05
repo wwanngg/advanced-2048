@@ -42,10 +42,41 @@ namespace Constants {
         { 2059, "color: white; font: bold 10px; border-radius: 10px; border-image: url(../resources/22.png); padding-bottom: 5px; padding-right: 5px;" },
         { 2060, "color: white; font: bold 10px; border-radius: 10px; border-image: url(../resources/23.jpg); padding-bottom: 5px; padding-right: 5px;" },
         { 2061, "color: white; font: bold 10px; border-radius: 10px; border-image: url(../resources/24.jpg); padding-bottom: 5px; padding-right: 5px;" } };
+    const QMap<int, QString> chemistryStyles {
+        { 2, "background-color: white; color: black; font: bold 30px; border-radius: 10px;"}, 
+        { 4, "background-color: yellow; color: black; font: bold 30px; border-radius: 10px;" },
+        { 8, "background-color: chocolate; color: white; font: bold 30px; border-radius: 10px;" },
+        { 16, "background-color: peru; color: white; font: bold 30px; border-radius: 10px;" },
+        { 32, "background-color: tomato; color: white; font: bold 30px; border-radius: 10px;" },
+        { 64, "background-color: red; color: white; font: bold 30px; border-radius: 10px;" },
+        { 128, "background-color: wheat; color: white; font: bold 30px; border-radius: 10px;" },
+        { 256, "background-color: gold; color: white; font: bold 30px; border-radius: 10px;" },
+        { 512, "background-color: goldenrod; color: white; font: bold 30px; border-radius: 10px;" } };
+    const QMap<int, int> chemistryConfig {
+        { 2, -1 },
+        { 4, -1 },
+        { 8, 5 }, 
+        { 16, -1 },
+        { 32, 23 },
+        { 64, -1 },
+        { 128, 80 },
+        { 256, 100 },
+        { 512, -1 } };
+    const QMap<int, QString> chemistryString {
+        { 2, "H2" },
+        { 4, "He4" },
+        { 8, "Be8" },
+        { 16, "O16" },
+        { 32, "P32" },
+        { 64, "Ni64" },
+        { 128, "Sn132" },
+        { 256, "Te130" },
+        { 512, "Xe136" } };
     const inline int windowSize{ 600 };
     const inline int labelSize{ 150 };
     const inline int duration{ 800 };
     const inline int maxUsedNum{ 2048 };
+    const inline int chemisrtySuccess{ 512 };
 }
 
 #endif

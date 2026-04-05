@@ -23,6 +23,7 @@ void SettingsDialog::createUI() {
     m_gameThemeCombo = new QComboBox(this);
     m_gameThemeCombo->addItem(tr("Number Theme"), "number");
     m_gameThemeCombo->addItem(tr("Cai Xukun Theme"), "caixukun");
+    m_gameThemeCombo->addItem(tr("Chemistry Theme"), "chemistry");
     formLayout->addRow(tr("Game Theme:"), m_gameThemeCombo);
 
     m_colorThemeCombo = new QComboBox(this);

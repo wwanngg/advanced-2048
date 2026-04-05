@@ -14,8 +14,7 @@
 #include <QFormLayout>
 #include <QGroupBox>
 
-class SettingsDialog : public QDialog
-{
+class SettingsDialog : public QDialog {
     Q_OBJECT
 
 public:

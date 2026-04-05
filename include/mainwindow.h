@@ -58,6 +58,7 @@ private:
 
     QVector<QVector<int>> m_intMap;
     QVector<QVector<QLabel*>> m_labelMap;
+    QVector<QVector<int>> m_surviveCount;
 
     int m_score;
     
@@ -68,9 +69,13 @@ private:
     enum GameType {
         number,
         caixukun,
+        chemistry,
     };
 
     GameType m_gametype;
+
+    void addSurviveCount();
+    bool validate(char direction);
 };
 
 #endif

@@ -65,9 +65,10 @@ void MainWindow::onSettingsChanged() {
                 if (!m_labelMap[i][j]) {
                     continue;
                 }
-                int labelNumber = m_labelMap[i][j]->text().toInt();
+                int labelNumber = m_intMap[i][j];
                 m_labelMap[i][j]->setAlignment(Qt::AlignCenter);
                 m_labelMap[i][j]->setStyleSheet(Constants::styles[labelNumber]);
+                m_labelMap[i][j]->setText(QString::number(labelNumber));
             }
         }
         m_gametype = GameType::number;
@@ -87,12 +88,39 @@ void MainWindow::onSettingsChanged() {
                 if (!m_labelMap[i][j]) {
                     continue;
                 }
-                int labelNumber = m_labelMap[i][j]->text().toInt();
+                int labelNumber = m_intMap[i][j];
                 m_labelMap[i][j]->setAlignment(Qt::AlignBottom | Qt::AlignRight);
                 m_labelMap[i][j]->setStyleSheet(Constants::caixukunStyles[labelNumber]);
+                m_labelMap[i][j]->setText(QString::number(labelNumber));
             }
         }
         m_gametype = GameType::caixukun;
+    } else if (gametheme == "chemistry" && m_gametype != GameType::chemistry) {
+        for (std::size_t i{ 0 }; i < 4; ++i) {
+            for (std::size_t j{ 0 }; j < 4; ++j) {
+                if (!m_labelMap[i][j]) {
+                    continue;
+                }
+                int labelNumber = m_intMap[i][j];
+                if (m_intMap[i][j] > Constants::chemisrtySuccess
+                    || (Constants::chemistryConfig[labelNumber] != -1 && m_surviveCount[i][j] >= Constants::chemistryConfig[labelNumber])) {
+                    m_intMap[i][j] = 0;
+                    m_surviveCount[i][j] = -1;
+                    m_labelMap[i][j]->hide();
+                    m_labelMap[i][j]->deleteLater();
+                    m_labelMap[i][j] = nullptr;
+                    continue;
+                }
+                m_labelMap[i][j]->setAlignment(Qt::AlignCenter);
+                m_labelMap[i][j]->setStyleSheet(Constants::chemistryStyles[labelNumber]);
+                if (Constants::chemistryConfig[labelNumber] == -1) {
+                    m_labelMap[i][j]->setText(Constants::chemistryString[labelNumber]);
+                } else {
+                    m_labelMap[i][j]->setText(Constants::chemistryString[labelNumber] + "(" + QString::number(Constants::chemistryConfig[labelNumber] - m_surviveCount[i][j]) + ")");
+                }
+            }
+        }
+        m_gametype = GameType::chemistry;
     }
 }
 
