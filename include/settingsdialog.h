@@ -34,6 +34,10 @@ private:
 
     QComboBox *m_colorThemeCombo;
     QComboBox *m_gameThemeCombo;
+    QComboBox *m_mapX;
+    QComboBox *m_mapY;
+    QComboBox *m_animationTimeLasts;
+    QComboBox *m_animationEasingCurve;
     
     QPushButton *m_okButton;
     QPushButton *m_cancelButton;

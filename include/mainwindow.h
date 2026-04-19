@@ -76,6 +76,8 @@ private:
 
     void addSurviveCount();
     bool validate(char direction);
+    bool isEmpty();
+    bool isGameStart;
 };
 
 #endif

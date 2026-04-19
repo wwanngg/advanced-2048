@@ -6,6 +6,8 @@
 #include <QPropertyAnimation>
 #include <QPointer>
 #include <QPauseAnimation>
+#include <QMessageBox>
+#include <QTimer>
 
 #include <functional>
 
@@ -14,13 +16,14 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , m_intMap(4, QVector<int>(4))
-    , m_labelMap(4, QVector<QLabel*>(4))
-    , m_surviveCount(4, QVector<int>(4, -1))
+    , m_settingsDialog(nullptr)
+    , m_intMap(Constants::imax, QVector<int>(Constants::jmax))
+    , m_labelMap(Constants::imax, QVector<QLabel*>(Constants::jmax))
+    , m_surviveCount(Constants::imax, QVector<int>(Constants::jmax, -1))
     , m_score(0)
     , m_animationRunning(false)
-    , m_settingsDialog(nullptr)
-    , m_gametype(GameType::number) {
+    , m_gametype(GameType::number)
+    , isGameStart(false) {
     createMenuBar();
     loadSettings();
     setupUI();
@@ -41,8 +44,8 @@ MainWindow::~MainWindow() {
         qApp->removeEventFilter(m_keyboardHandler);
     }
 
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
+    for (int i = 0; i < Constants::imax; ++i) {
+        for (int j = 0; j < Constants::jmax; ++j) {
             if (m_labelMap[i][j]) {
                 m_labelMap[i][j]->deleteLater();
                 m_labelMap[i][j] = nullptr;
@@ -69,7 +72,7 @@ void MainWindow::setupUI() {
     addSurviveCount();
     
     setWindowTitle("2048 Score: 0");
-    setFixedSize(Constants::windowSize, Constants::windowSize + menuBar->height());
+    setFixedSize(Constants::windowSizeX, Constants::windowSizeY + menuBar->height());
 }
 
 void MainWindow::setupAnimations() {
@@ -106,7 +109,7 @@ QPropertyAnimation* MainWindow::createMoveAnimation(QWidget *widget, const QRect
     anim->setDuration(duration);
     anim->setStartValue(startRect);
     anim->setEndValue(endRect);
-    anim->setEasingCurve(QEasingCurve::InOutQuad);
+    anim->setEasingCurve(Constants::animEasingCurve);
     
     return anim;
 }
@@ -123,7 +126,7 @@ QPropertyAnimation* MainWindow::createDisappearAnimation(QWidget *widget, const 
     );
     anim->setStartValue(startRect);
     anim->setEndValue(endRect);
-    anim->setEasingCurve(QEasingCurve::InOutQuad);
+    anim->setEasingCurve(Constants::animEasingCurve);
     anim->setDuration(duration);
     
     QPointer<QWidget> safeWidget = widget;
@@ -156,9 +159,17 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyA() {
     connect(seqGroup, &QSequentialAnimationGroup::finished, [this, seqGroup]() {
         m_animationRunning = false;
         seqGroup->deleteLater();
+        if (!validate('w') && !validate('a') && !validate('s') && !validate('d')) {
+            QMessageBox::information(this, "Message", "You lose.");
+            QTimer::singleShot(0, this, &QWidget::close);
+        }
     });
     if (m_animationRunning) {
         return new QSequentialAnimationGroup(this);
+    }
+    if (isEmpty()) {
+        seqGroup->addAnimation(createRandom());
+        return seqGroup;
     }
     if (!validate('a')) {
         seqGroup->addPause(100);
@@ -170,7 +181,7 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyA() {
     m_animationRunning = true;
     QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
 
-    QVector<QVector<bool>> merged(4, QVector<bool>(4, false));
+    QVector<QVector<bool>> merged(Constants::imax, QVector<bool>(Constants::jmax, false));
     
     struct MoveData {
         QPointer<QLabel> label;
@@ -179,18 +190,18 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyA() {
     };
     QVector<MoveData> moves;
     
-    for (std::size_t i = 0; i < 4; ++i) {
-        for (std::size_t j = 1; j < 4; ++j) {
+    for (int i = 0; i < Constants::imax; ++i) {
+        for (int j = 1; j < Constants::jmax; ++j) {
             if (m_intMap[i][j] == 0 || !m_labelMap[i][j]) {
                 continue;
             }
             
             QPointer<QLabel> currentLabel = m_labelMap[i][j];
             int currentValue = m_intMap[i][j];
-            std::size_t target = j;
+            int target = j;
             bool shouldMerge = false;
 
-            for (std::size_t k = j; k > 0; --k) {
+            for (int k = j; k > 0; --k) {
                 if (m_intMap[i][k-1] == 0) {
                     target = k-1;
                 } else if (m_intMap[i][k-1] == currentValue && !merged[i][k-1]) {
@@ -303,7 +314,7 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyA() {
         }
     }
     if (m_gametype == GameType::chemistry) {
-        for (std::size_t i = 0, j = 0; i < 4; ++i) {
+        for (int i = 0, j = 0; i < Constants::imax; ++i) {
             if (m_intMap[i][j] == 0 || !m_labelMap[i][j]) {
                 continue;
             }
@@ -361,9 +372,17 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyD() {
     connect(seqGroup, &QSequentialAnimationGroup::finished, [this, seqGroup]() {
         m_animationRunning = false;
         seqGroup->deleteLater();
+        if (!validate('w') && !validate('a') && !validate('s') && !validate('d')) {
+            QMessageBox::information(this, "Message", "You lose.");
+            QTimer::singleShot(0, this, &QWidget::close);
+        }
     });
     if (m_animationRunning) {
         return new QSequentialAnimationGroup(this);
+    }
+    if (isEmpty()) {
+        seqGroup->addAnimation(createRandom());
+        return seqGroup;
     }
     if (!validate('d')) {
         seqGroup->addPause(100);
@@ -375,7 +394,7 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyD() {
     m_animationRunning = true;
     QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
 
-    QVector<QVector<bool>> merged(4, QVector<bool>(4, false));
+    QVector<QVector<bool>> merged(Constants::imax, QVector<bool>(Constants::jmax, false));
     
     struct MoveData {
         QPointer<QLabel> label;
@@ -384,19 +403,19 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyD() {
     };
     QVector<MoveData> moves;
     
-    for (std::size_t i = 0; i < 4; ++i) {
-        for (int j = 3; j >= 0; --j) {
-            std::size_t col = static_cast<std::size_t>(j);
+    for (int i = 0; i < Constants::imax; ++i) {
+        for (int j = Constants::jmax - 1; j >= 0; --j) {
+            int col = j;
             if (m_intMap[i][col] == 0 || !m_labelMap[i][col]) {
                 continue;
             }
             
             QPointer<QLabel> currentLabel = m_labelMap[i][col];
             int currentValue = m_intMap[i][col];
-            std::size_t target = col;
+            int target = col;
             bool shouldMerge = false;
             
-            for (std::size_t k = col; k < 3; ++k) {
+            for (int k = col; k < Constants::jmax - 1; ++k) {
                 if (m_intMap[i][k+1] == 0) {
                     target = k+1;
                 } else if (m_intMap[i][k+1] == currentValue && !merged[i][k+1]) {
@@ -542,12 +561,19 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyW() {
     connect(seqGroup, &QSequentialAnimationGroup::finished, [this, seqGroup]() {
         m_animationRunning = false;
         seqGroup->deleteLater();
+        if (!validate('w') && !validate('a') && !validate('s') && !validate('d')) {
+            QMessageBox::information(this, "Message", "You lose.");
+            QTimer::singleShot(0, this, &QWidget::close);
+        }
     });
     
     if (m_animationRunning) {
         return new QSequentialAnimationGroup(this);
     }
-    
+    if (isEmpty()) {
+        seqGroup->addAnimation(createRandom());
+        return seqGroup;
+    }
     if (!validate('w')) {
         seqGroup->addPause(100);
         return seqGroup;
@@ -558,7 +584,7 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyW() {
     m_animationRunning = true;
     QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
 
-    QVector<QVector<bool>> merged(4, QVector<bool>(4, false));
+    QVector<QVector<bool>> merged(Constants::imax, QVector<bool>(Constants::jmax, false));
     
     struct MoveData {
         QPointer<QLabel> label;
@@ -567,18 +593,18 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyW() {
     };
     QVector<MoveData> moves;
 
-    for (std::size_t j = 0; j < 4; ++j) {
-        for (std::size_t i = 1; i < 4; ++i) {
+    for (int j = 0; j < Constants::jmax; ++j) {
+        for (int i = 1; i < Constants::imax; ++i) {
             if (m_intMap[i][j] == 0 || !m_labelMap[i][j]) {
                 continue;
             }
             
             QPointer<QLabel> currentLabel = m_labelMap[i][j];
             int currentValue = m_intMap[i][j];
-            std::size_t target = i;
+            int target = i;
             bool shouldMerge = false;
             
-            for (std::size_t k = i; k > 0; --k) {
+            for (int k = i; k > 0; --k) {
                 if (m_intMap[k-1][j] == 0) {
                     target = k-1;
                 } else if (m_intMap[k-1][j] == currentValue && !merged[k-1][j]) {
@@ -628,7 +654,6 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyW() {
                     m_score += m_intMap[target][j];
                     merged[target][j] = true;
                 } else {
-                    // 移动逻辑
                     std::swap(m_intMap[target][j], m_intMap[i][j]);
                     std::swap(m_surviveCount[target][j], m_surviveCount[i][j]);
                     if (m_gametype == GameType::number || m_gametype == GameType::caixukun) {
@@ -693,7 +718,7 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyW() {
     }
 
     if (m_gametype == GameType::chemistry) {
-        for (std::size_t j = 0, i = 0; j < 4; ++j) {
+        for (int j = 0, i = 0; j < Constants::jmax; ++j) {
             if (m_intMap[i][j] == 0 || !m_labelMap[i][j]) {
                 continue;
             }
@@ -753,12 +778,19 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyS() {
     connect(seqGroup, &QSequentialAnimationGroup::finished, [this, seqGroup]() {
         m_animationRunning = false;
         seqGroup->deleteLater();
+        if (!validate('w') && !validate('a') && !validate('s') && !validate('d')) {
+            QMessageBox::information(this, "Message", "You lose.");
+            QTimer::singleShot(0, this, &QWidget::close);
+        }
     });
     
     if (m_animationRunning) {
         return new QSequentialAnimationGroup(this);
     }
-    
+    if (isEmpty()) {
+        seqGroup->addAnimation(createRandom());
+        return seqGroup;
+    }
     if (!validate('s')) {
         seqGroup->addPause(100);
         return seqGroup;
@@ -769,7 +801,7 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyS() {
     m_animationRunning = true;
     QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
 
-    QVector<QVector<bool>> merged(4, QVector<bool>(4, false));
+    QVector<QVector<bool>> merged(Constants::imax, QVector<bool>(Constants::jmax, false));
     
     struct MoveData {
         QPointer<QLabel> label;
@@ -778,19 +810,19 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyS() {
     };
     QVector<MoveData> moves;
     
-    for (std::size_t j = 0; j < 4; ++j) {
-        for (int i = 2; i >= 0; --i) {
-            std::size_t row = static_cast<std::size_t>(i);
+    for (int j = 0; j < Constants::jmax; ++j) {
+        for (int i = Constants::imax - 2; i >= 0; --i) {
+            int row = i;
             if (m_intMap[row][j] == 0 || !m_labelMap[row][j]) {
                 continue;
             }
             
             QPointer<QLabel> currentLabel = m_labelMap[row][j];
             int currentValue = m_intMap[row][j];
-            std::size_t target = row;
+            int target = row;
             bool shouldMerge = false;
             
-            for (std::size_t k = row; k < 3; ++k) {
+            for (int k = row; k < Constants::imax - 1; ++k) {
                 if (m_intMap[k+1][j] == 0) {
                     target = k+1;
                 } else if (m_intMap[k+1][j] == currentValue && !merged[k+1][j]) {
@@ -903,9 +935,9 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyS() {
         }
     }
 
-    int row = 3;
+    int row = Constants::imax - 1;
     if (m_gametype == GameType::chemistry) {
-        for (std::size_t j = 0; j < 4; ++j) {
+        for (int j = 0; j < Constants::jmax; ++j) {
             if (m_intMap[row][j] == 0 || !m_labelMap[row][j]) {
                 continue;
             }
@@ -961,9 +993,9 @@ QSequentialAnimationGroup* MainWindow::createAnimationForKeyS() {
 }
 
 QParallelAnimationGroup* MainWindow::createRandom() {
-    QVector<QPair<std::size_t, std::size_t>> emptyLocations;
-    for (std::size_t i = 0; i < 4; ++i) {
-        for (std::size_t j = 0; j < 4; ++j) {
+    QVector<QPair<int, int>> emptyLocations;
+    for (int i = 0; i < Constants::imax; ++i) {
+        for (int j = 0; j < Constants::jmax; ++j) {
             if (m_intMap[i][j] == 0) {
                 emptyLocations.push_back({i, j});
             }
@@ -971,7 +1003,50 @@ QParallelAnimationGroup* MainWindow::createRandom() {
     }
 
     if (emptyLocations.isEmpty()) {
-        return new QParallelAnimationGroup(this);
+        QParallelAnimationGroup* emptyGroup = new QParallelAnimationGroup(this);
+        if (!validate('w') && !validate('a') && !validate('s') && !validate('d')) {
+            connect(emptyGroup, &QParallelAnimationGroup::finished, [this]() {
+                QMessageBox::information(this, "Message", "You lose.");
+                QTimer::singleShot(0, this, &QWidget::close);
+            });
+        }
+        return emptyGroup;
+    }
+
+    if (m_gametype == GameType::number || m_gametype == GameType::caixukun) {
+        bool isFound = false;
+        for (int i = 0; i < Constants::imax; ++i) {
+            for (int j = 0; j < Constants::jmax; ++j) {
+                if (m_intMap[i][j] == Constants::maxUsedNum) {
+                    isFound = true;
+                }
+            }
+        }
+        if (isFound) {
+            QParallelAnimationGroup* emptyGroup = new QParallelAnimationGroup(this);
+            connect(emptyGroup, &QParallelAnimationGroup::finished, [this]() {
+                QMessageBox::information(this, "Message", "You win.");
+                QTimer::singleShot(0, this, &QWidget::close);
+            });
+        }
+    }
+
+    if (m_gametype == GameType::chemistry) {
+        bool isFound = false;
+        for (int i = 0; i < Constants::imax; ++i) {
+            for (int j = 0; j < Constants::jmax; ++j) {
+                if (m_intMap[i][j] == Constants::chemisrtySuccess) {
+                    isFound = true;
+                }
+            }
+        }
+        if (isFound) {
+            QParallelAnimationGroup* emptyGroup = new QParallelAnimationGroup(this);
+            connect(emptyGroup, &QParallelAnimationGroup::finished, [this]() {
+                QMessageBox::information(this, "Message", "You win.");
+                QTimer::singleShot(0, this, &QWidget::close);
+            });
+        }
     }
 
     auto pair = emptyLocations[QRandomGenerator::global()->bounded(emptyLocations.size())];
@@ -1032,8 +1107,8 @@ QParallelAnimationGroup* MainWindow::createRandom() {
 }
 
 void MainWindow::addSurviveCount() {
-    for (std::size_t i = 0; i < 4; ++i) {
-        for (std::size_t j = 0; j < 4; ++j) {
+    for (int i = 0; i < Constants::imax; ++i) {
+        for (int j = 0; j < Constants::jmax; ++j) {
             if (m_surviveCount[i][j] != -1) {
                 ++m_surviveCount[i][j];
             }
@@ -1044,10 +1119,10 @@ void MainWindow::addSurviveCount() {
 bool MainWindow::validate(char direction) {
     switch (direction) {
     case 's': 
-        for (int j = 0; j < 4; ++j) {
-            for (int i = 2; i >= 0; --i) {
+        for (int j = 0; j < Constants::jmax; ++j) {
+            for (int i = Constants::imax - 2; i >= 0; --i) {
                 if (m_intMap[i][j] == 0) continue;
-                for (int k = i + 1; k < 4; ++k) {
+                for (int k = i + 1; k < Constants::imax; ++k) {
                     if (m_intMap[k][j] == 0) {
                         return true;
                     } else if (m_intMap[k][j] == m_intMap[i][j]) {
@@ -1060,8 +1135,8 @@ bool MainWindow::validate(char direction) {
         }
         return false;
     case 'w':
-        for (int j = 0; j < 4; ++j) {
-            for (int i = 1; i < 4; ++i) {
+        for (int j = 0; j < Constants::jmax; ++j) {
+            for (int i = 1; i < Constants::imax; ++i) {
                 if (m_intMap[i][j] == 0) continue;
                 for (int k = i - 1; k >= 0; --k) {
                     if (m_intMap[k][j] == 0) {
@@ -1077,8 +1152,8 @@ bool MainWindow::validate(char direction) {
         return false;
         
     case 'a':
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 1; j < 4; ++j) {
+        for (int i = 0; i < Constants::imax; ++i) {
+            for (int j = 1; j < Constants::jmax; ++j) {
                 if (m_intMap[i][j] == 0) continue;
                 for (int k = j - 1; k >= 0; --k) {
                     if (m_intMap[i][k] == 0) {
@@ -1094,10 +1169,10 @@ bool MainWindow::validate(char direction) {
         return false;
         
     case 'd':
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 2; j >= 0; --j) {
+        for (int i = 0; i < Constants::imax; ++i) {
+            for (int j = Constants::jmax - 2; j >= 0; --j) {
                 if (m_intMap[i][j] == 0) continue;
-                for (int k = j + 1; k < 4; ++k) {
+                for (int k = j + 1; k < Constants::jmax; ++k) {
                     if (m_intMap[i][k] == 0) {
                         return true;
                     } else if (m_intMap[i][k] == m_intMap[i][j]) {
@@ -1113,4 +1188,15 @@ bool MainWindow::validate(char direction) {
     default:
         return false;
     }
+}
+
+bool MainWindow::isEmpty() {
+    for (int i = 0; i < Constants::imax; ++i) {
+        for (int j = 0; j < Constants::jmax; ++j) {
+            if (m_intMap[i][j]) {
+                return false;
+            }
+        }
+    }
+    return true;
 }

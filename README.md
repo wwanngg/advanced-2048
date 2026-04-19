@@ -6,8 +6,6 @@ This is the 2026 C++ Course Project for Nankai University.
 
 This project is based on the traditional 2048 game with improvements and innovations to avoid monotony and provide a fresh gaming experience.
 
-Currently, only the traditional 2048 version has been implemented.
-
 ## Technical Stack
 
 - Framework: Qt 6
@@ -21,15 +19,13 @@ Currently, only the traditional 2048 version has been implemented.
 - ✅ Classic 2048 gameplay mechanics
 - ✅ Smooth tile movements and animations
 - ✅ Score tracking system
+- ✅ New game modes
+- ✅ Themed visual effects
+- ✅ Custom board sizes
 
 ### Planned Features
 
-- 🚀 New game modes
-- 🚀 Special power-ups and abilities
-- 🚀 Themed visual effects
-- 🚀 Achievement system
 - 🚀 Multiplayer support
-- 🚀 Custom board sizes
 
 ## Building the Project
 
@@ -60,7 +56,7 @@ advanced-2048.exe  # On Windows
 
 ## Project Structure
 
-```cpp
+```
 advanced-2048/
 ├── src/           # Source files
 ├── include/       # Header files
@@ -71,8 +67,7 @@ advanced-2048/
 
 ## Development Status
 
-- Current Version: 0.1.0 (Classic 2048 implementation)
-- Next Milestone: Enhanced features and game modes
+- Current Version: 0.2.0 
 
 ## Contributing
 

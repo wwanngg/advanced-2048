@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(advanced-2048 VERSION 0.1 LANGUAGES CXX)
+project(advanced-2048 VERSION 0.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,6 +8,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 qt_standard_project_setup()
+
+if(MSVC)
+    add_compile_options(
+        /permissive-
+        /W4
+        /w44365
+        /WX
+        /wd4702
+    )
+endif()
 
 qt_add_executable(advanced-2048
     src/main.cpp

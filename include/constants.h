@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QString>
+#include <QEasingCurve>
 
 namespace Constants {
     const inline QMap<int, QString> styles { 
@@ -72,11 +73,15 @@ namespace Constants {
         { 128, "Sn132" },
         { 256, "Te130" },
         { 512, "Xe136" } };
-    const inline int windowSize{ 600 };
+    inline int windowSizeX{ 600 };
+    inline int windowSizeY{ 600 };
     const inline int labelSize{ 150 };
-    const inline int duration{ 800 };
+    inline int duration{ 800 };
     const inline int maxUsedNum{ 2048 };
     const inline int chemisrtySuccess{ 512 };
+    inline QEasingCurve animEasingCurve{ QEasingCurve::InOutQuad };
+    inline int imax{ 4 };
+    inline int jmax{ 4 };
 }
 
 #endif
