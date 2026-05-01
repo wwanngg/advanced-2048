@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/1.jpg</file>
+        <file>resources/2.jpg</file>
+        <file>resources/3.jpg</file>
+        <file>resources/4.jpg</file>
+        <file>resources/5.png</file>
+        <file>resources/6.jpg</file>
+        <file>resources/7.jpg</file>
+        <file>resources/8.jpg</file>
+        <file>resources/9.jpg</file>
+        <file>resources/10.jpg</file>
+        <file>resources/11.jpg</file>
+        <file>resources/12.jpg</file>
+        <file>resources/13.jpg</file>
+        <file>resources/14.jpg</file>
+        <file>resources/15.jpg</file>
+        <file>resources/16.jpg</file>
+        <file>resources/17.jpg</file>
+        <file>resources/18.jpg</file>
+        <file>resources/19.jpg</file>
+        <file>resources/20.jpg</file>
+        <file>resources/21.jpg</file>
+        <file>resources/22.png</file>
+        <file>resources/23.jpg</file>
+        <file>resources/24.jpg</file>
+    </qresource>
+</RCC>

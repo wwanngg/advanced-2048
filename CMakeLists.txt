@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 qt_standard_project_setup()
+set(QRC_FILES resources.qrc)
+qt_add_resources(APP_RESOURCES ${QRC_FILES})
 
 if(MSVC)
     add_compile_options(
@@ -41,6 +43,7 @@ qt_add_executable(advanced-2048
     include/KeyboardHandler.h
     include/settingsdialog.h
     include/constants.h
+    ${APP_RESOURCES}
 )
 
 target_link_libraries(advanced-2048 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
