@@ -1,14 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QLabel>
-#include <QPropertyAnimation>
-#include <QParallelAnimationGroup>
-#include <QSequentialanimationgroup>
-#include <QMenuBar>
-#include <QMenu>
 #include <QAction>
+#include <QLabel>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
 #include <QTextEdit>
 
 #include "KeyboardHandler.h"
@@ -18,8 +18,13 @@ class SettingsDialog;
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+
+#ifdef UNIT_TEST
+    friend class TestMainWindow;
+    std::function<void()> showMessageCallback = nullptr;
+#endif
 
 private slots:
     void onExit();
@@ -29,15 +34,15 @@ private slots:
 private:
     void createMenuBar();
     void loadSettings();
-    
-    QMenuBar *menuBar;
-    QMenu *fileMenu;
-    QAction *exitAction;
 
-    SettingsDialog *m_settingsDialog;
-    QTextEdit *m_textEdit;
-    
-    QAction *m_settingsAction;
+    QMenuBar* menuBar;
+    QMenu* fileMenu;
+    QAction* exitAction;
+
+    SettingsDialog* m_settingsDialog;
+    QTextEdit* m_textEdit;
+
+    QAction* m_settingsAction;
 
     void setupUI();
     void setupAnimations();
@@ -51,18 +56,17 @@ private:
     QSequentialAnimationGroup* createAnimationForKeyS();
     QSequentialAnimationGroup* createAnimationForKeyW();
 
-    
-    QPropertyAnimation* createMoveAnimation(QWidget *widget, const QRect& offset, int duration);
-    QSequentialAnimationGroup* createMoveDisappearAnimation(QWidget *widget, const QRect& offset, int duration);
-    QPropertyAnimation* createDisappearAnimation(QWidget *widget, const QRect& startRect, int duration);
+    QPropertyAnimation* createMoveAnimation(QWidget* widget, const QRect& offset, int duration);
+    QSequentialAnimationGroup* createMoveDisappearAnimation(QWidget* widget, const QRect& offset, int duration);
+    QPropertyAnimation* createDisappearAnimation(QWidget* widget, const QRect& startRect, int duration);
 
     QVector<QVector<int>> m_intMap;
     QVector<QVector<QLabel*>> m_labelMap;
     QVector<QVector<int>> m_surviveCount;
 
     int m_score;
-    
-    KeyboardHandler *m_keyboardHandler;
+
+    KeyboardHandler* m_keyboardHandler;
 
     bool m_animationRunning;
 

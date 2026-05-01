@@ -1,13 +1,13 @@
 #include "../include/settingsdialog.h"
 #include <QMessageBox>
 
-SettingsDialog::SettingsDialog(QWidget *parent)
+SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent)
     , m_settings(new QSettings("wwanngg", "2048advanced", this)) {
     setWindowTitle(tr("Settings"));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setMinimumSize(400, 300);
-    
+
     createUI();
     loadSettings();
 }
@@ -15,11 +15,11 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 SettingsDialog::~SettingsDialog() {}
 
 void SettingsDialog::createUI() {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    QGroupBox *generalGroup = new QGroupBox(tr("Game Settings"), this);
-    QFormLayout *formLayout = new QFormLayout(generalGroup);
-    
+    QGroupBox* generalGroup = new QGroupBox(tr("Game Settings"), this);
+    QFormLayout* formLayout = new QFormLayout(generalGroup);
+
     m_gameThemeCombo = new QComboBox(this);
     m_gameThemeCombo->addItem(tr("Number Theme"), "number");
     m_gameThemeCombo->addItem(tr("Cai Xukun Theme"), "caixukun");
@@ -31,11 +31,11 @@ void SettingsDialog::createUI() {
     m_colorThemeCombo->addItem(tr("Dark Theme"), "dark");
     m_colorThemeCombo->addItem(tr("System Default"), "system");
     formLayout->addRow(tr("Color Theme:"), m_colorThemeCombo);
-    
+
     mainLayout->addWidget(generalGroup);
 
-    QGroupBox *personalizeGroup = new QGroupBox(tr("Personalize"), this);
-    QFormLayout *formLayoutForPersonalize = new QFormLayout(personalizeGroup);
+    QGroupBox* personalizeGroup = new QGroupBox(tr("Personalize"), this);
+    QFormLayout* formLayoutForPersonalize = new QFormLayout(personalizeGroup);
 
     m_mapX = new QComboBox(this);
     m_mapX->addItem(tr("2"), "2");
@@ -102,17 +102,19 @@ void SettingsDialog::createUI() {
     formLayoutForPersonalize->addRow(tr("Animation Easing Curve"), m_animationEasingCurve);
 
     mainLayout->addWidget(personalizeGroup);
-    
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(this);
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     m_okButton = buttonBox->button(QDialogButtonBox::Ok);
     m_cancelButton = buttonBox->button(QDialogButtonBox::Cancel);
     m_applyButton = buttonBox->addButton(tr("Apply"), QDialogButtonBox::ApplyRole);
-    
-    if (m_okButton) m_okButton->setText(tr("OK"));
-    if (m_cancelButton) m_cancelButton->setText(tr("Cancel"));
-    
+
+    if (m_okButton)
+        m_okButton->setText(tr("OK"));
+    if (m_cancelButton)
+        m_cancelButton->setText(tr("Cancel"));
+
     connect(buttonBox, &QDialogButtonBox::clicked, this, &SettingsDialog::onButtonBoxClicked);
-    
+
     mainLayout->addWidget(buttonBox);
 }
 
@@ -161,13 +163,13 @@ void SettingsDialog::saveSettings() {
     m_settings->setValue("Personalize/mapY", m_mapY->currentData());
     m_settings->setValue("Personalize/animationDuration", m_animationTimeLasts->currentData());
     m_settings->setValue("Personalize/animationEasingCurve", m_animationEasingCurve->currentData());
-    
+
     m_settings->sync();
-    
+
     emit settingsChanged();
 }
 
-void SettingsDialog::onButtonBoxClicked(QAbstractButton *button) {
+void SettingsDialog::onButtonBoxClicked(QAbstractButton* button) {
     if (button == m_okButton) {
         saveSettings();
         accept();

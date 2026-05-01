@@ -19,6 +19,18 @@ if(MSVC)
     )
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(
+        -Wall
+        -Wextra
+        -Wconversion
+        -Wsign-conversion
+        -Wpedantic
+        -Werror
+        -Wno-unused-parameter
+    )
+endif()
+
 qt_add_executable(advanced-2048
     src/main.cpp
     src/mainwindow.cpp
@@ -46,3 +58,6 @@ install(TARGETS advanced-2048
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+enable_testing()
+add_subdirectory(tests)
