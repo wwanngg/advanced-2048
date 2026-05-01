@@ -24,5 +24,8 @@
         <file>resources/22.png</file>
         <file>resources/23.jpg</file>
         <file>resources/24.jpg</file>
+        <file>resources/effect.wav</file>
+        <file>resources/kuneffect.wav</file>
+        <file>resources/music.mp3</file>
     </qresource>
 </RCC>

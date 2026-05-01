@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QPropertyAnimation>
 #include <QSequentialAnimationGroup>
+#include <QSoundEffect>
 #include <functional>
 
 class KeyboardHandler : public QObject {
@@ -40,6 +41,8 @@ private:
 
     QMap<int, KeyAnimationInfo> m_keyAnimations;
     bool m_isAnyAnimationRunning;
+
+    QSoundEffect* m_effect;
 };
 
 #endif

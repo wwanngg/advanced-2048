@@ -2,8 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QAction>
+#include <QAudioOutput>
 #include <QLabel>
 #include <QMainWindow>
+#include <QMediaPlayer>
 #include <QMenu>
 #include <QMenuBar>
 #include <QParallelAnimationGroup>
@@ -30,10 +32,12 @@ private slots:
     void onExit();
     void onSettings();
     void onSettingsChanged();
+    void onMusicStateChanged(bool play);
 
 private:
     void createMenuBar();
     void loadSettings();
+    void initMusicPlayer();
 
     QMenuBar* menuBar;
     QMenu* fileMenu;
@@ -43,6 +47,9 @@ private:
     QTextEdit* m_textEdit;
 
     QAction* m_settingsAction;
+
+    QMediaPlayer* m_musicPlayer;
+    QAudioOutput* m_audioOutput;
 
     void setupUI();
     void setupAnimations();

@@ -5,7 +5,7 @@ project(advanced-2048 VERSION 0.2 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
 qt_standard_project_setup()
 set(QRC_FILES resources.qrc)
@@ -46,7 +46,7 @@ qt_add_executable(advanced-2048
     ${APP_RESOURCES}
 )
 
-target_link_libraries(advanced-2048 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(advanced-2048 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
 
 set_target_properties(advanced-2048 PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_animationRunning(false)
     , m_gametype(GameType::number)
     , isGameStart(false) {
+    initMusicPlayer();
     createMenuBar();
     loadSettings();
     setupUI();

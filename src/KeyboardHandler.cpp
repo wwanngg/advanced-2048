@@ -1,9 +1,12 @@
 #include "../include/KeyboardHandler.h"
+#include "../include/constants.h"
+#include <QSoundEffect>
 #include <QTimer>
 
 KeyboardHandler::KeyboardHandler(QObject* parent)
     : QObject(parent)
-    , m_isAnyAnimationRunning(false) {}
+    , m_isAnyAnimationRunning(false)
+    , m_effect(new QSoundEffect(this)) {}
 
 void KeyboardHandler::registerKeyAnimation(int key, std::function<QSequentialAnimationGroup*()> animationCreator) {
     if (animationCreator) {
@@ -71,6 +74,16 @@ void KeyboardHandler::startAnimation(KeyAnimationInfo& info) {
             connect(info.currentAnimation, &QSequentialAnimationGroup::finished, this, &KeyboardHandler::onAnimationFinished);
 
             info.currentAnimation->start();
+            if (Constants::isPlayEffects) {
+                if (Constants::gameTheme == 1) {
+                    m_effect->setSource(QUrl("qrc:///resources/kuneffect.wav"));
+                    m_effect->play();
+                } else {
+                    m_effect->setSource(QUrl("qrc:///resources/effect.wav"));
+                    m_effect->play();
+                }
+            }
+
             info.isWaiting = false;
             m_isAnyAnimationRunning = true;
         }

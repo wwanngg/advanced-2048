@@ -82,6 +82,9 @@ const inline int chemisrtySuccess{512};
 inline QEasingCurve animEasingCurve{QEasingCurve::InOutQuad};
 inline int imax{4};
 inline int jmax{4};
+inline bool isPlayEffects{true};
+inline bool isPlayBGM{true};
+inline int gameTheme{0};
 } // namespace Constants
 
 #endif

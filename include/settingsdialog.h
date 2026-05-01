@@ -25,9 +25,12 @@ private slots:
     void saveSettings();
     void loadSettings();
     void onButtonBoxClicked(QAbstractButton* button);
+    void onComboBoxChanged(int index);
+    void onMusicCheckBoxToggled(bool checked);
 
 signals:
     void settingsChanged();
+    void musicStateChanged(bool play);
 
 #ifdef UNIT_TEST
     friend class TestSettingsDialog;
@@ -46,6 +49,9 @@ private:
     QPushButton* m_okButton;
     QPushButton* m_cancelButton;
     QPushButton* m_applyButton;
+
+    QCheckBox* m_isPlayEffects;
+    QCheckBox* m_isPlayBackgroundMusic;
 
     QSettings* m_settings;
 };

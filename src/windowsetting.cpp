@@ -36,6 +36,7 @@ void MainWindow::onSettings() {
     if (!m_settingsDialog) {
         m_settingsDialog = new SettingsDialog(this);
         connect(m_settingsDialog, &SettingsDialog::settingsChanged, this, &MainWindow::onSettingsChanged);
+        connect(m_settingsDialog, &SettingsDialog::musicStateChanged, this, &MainWindow::onMusicStateChanged);
     }
 
     m_settingsDialog->exec();
@@ -119,6 +120,28 @@ void MainWindow::onSettingsChanged() {
             }
         }
         m_gametype = GameType::chemistry;
+    }
+    if (m_gametype == GameType::number) {
+        Constants::gameTheme = 0;
+    } else if (m_gametype == GameType::caixukun) {
+        Constants::gameTheme = 1;
+    } else if (m_gametype == GameType::chemistry) {
+        Constants::gameTheme = 2;
+    }
+
+    bool isPlayEffects = settings.value("Game/isPlayEffect", true).toBool();
+    bool isPlayBGM = settings.value("Game/isPlayBGM", true).toBool();
+    Constants::isPlayEffects = isPlayEffects;
+    Constants::isPlayBGM = isPlayBGM;
+
+    if (isPlayBGM && Constants::gameTheme == 1) {
+        if (!m_musicPlayer->isPlaying()) {
+            m_musicPlayer->play();
+        }
+    } else {
+        if (m_musicPlayer->isPlaying()) {
+            m_musicPlayer->stop();
+        }
     }
 
     QString mapX = settings.value("Personalize/mapX", "4").toString();
@@ -268,5 +291,33 @@ void MainWindow::onExit() {
 
     if (reply == QMessageBox::Yes) {
         close();
+    }
+}
+
+void MainWindow::initMusicPlayer() {
+    m_musicPlayer = new QMediaPlayer(this);
+    m_audioOutput = new QAudioOutput(this);
+    m_musicPlayer->setAudioOutput(m_audioOutput);
+
+    m_musicPlayer->setSource(QUrl("qrc:///resources/music.mp3"));
+    m_audioOutput->setVolume(0.3f);
+
+    connect(m_musicPlayer, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
+        if (status == QMediaPlayer::EndOfMedia) {
+            m_musicPlayer->setPosition(0);
+            m_musicPlayer->play();
+        }
+    });
+}
+
+void MainWindow::onMusicStateChanged(bool play) {
+    if (play) {
+        if (!m_musicPlayer->isPlaying()) {
+            m_musicPlayer->play();
+        }
+    } else {
+        if (m_musicPlayer->isPlaying()) {
+            m_musicPlayer->stop();
+        }
     }
 }

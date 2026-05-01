@@ -1,4 +1,5 @@
 #include "../include/settingsdialog.h"
+#include "../include/constants.h"
 #include <QMessageBox>
 
 SettingsDialog::SettingsDialog(QWidget* parent)
@@ -31,6 +32,20 @@ void SettingsDialog::createUI() {
     m_colorThemeCombo->addItem(tr("Dark Theme"), "dark");
     m_colorThemeCombo->addItem(tr("System Default"), "system");
     formLayout->addRow(tr("Color Theme:"), m_colorThemeCombo);
+
+    m_isPlayEffects = new QCheckBox("Play sounds effect", this);
+    m_isPlayEffects->setEnabled(true);
+    formLayout->addRow(m_isPlayEffects);
+
+    m_isPlayBackgroundMusic = new QCheckBox("Play background music", this);
+    m_isPlayBackgroundMusic->setEnabled(true);
+    formLayout->addRow(m_isPlayBackgroundMusic);
+
+    connect(m_gameThemeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::onComboBoxChanged);
+
+    onComboBoxChanged(m_gameThemeCombo->currentIndex());
+
+    connect(m_isPlayBackgroundMusic, &QCheckBox::toggled, this, &SettingsDialog::onMusicCheckBoxToggled);
 
     mainLayout->addWidget(generalGroup);
 
@@ -131,6 +146,18 @@ void SettingsDialog::loadSettings() {
         m_gameThemeCombo->setCurrentIndex(gameThemeIndex);
     }
 
+    bool isPlayEffect = m_settings->value("Game/isPlayEffect", true).toBool();
+    m_isPlayEffects->setChecked(isPlayEffect);
+
+    bool isPlayBGM = m_settings->value("Game/isPlayBGM", true).toBool();
+    m_isPlayBackgroundMusic->setChecked(isPlayBGM);
+
+    if (isPlayBGM && gameThemeIndex == 1) {
+        emit musicStateChanged(true);
+    } else {
+        emit musicStateChanged(false);
+    }
+
     QString mapX = m_settings->value("Personalize/mapX", "4").toString();
     int mapXIndex = m_mapX->findData(mapX);
     if (mapXIndex >= 0) {
@@ -159,6 +186,8 @@ void SettingsDialog::loadSettings() {
 void SettingsDialog::saveSettings() {
     m_settings->setValue("Game/ColorTheme", m_colorThemeCombo->currentData());
     m_settings->setValue("Game/GameTheme", m_gameThemeCombo->currentData());
+    m_settings->setValue("Game/isPlayEffect", m_isPlayEffects->isChecked());
+    m_settings->setValue("Game/isPlayBGM", m_isPlayBackgroundMusic->isChecked());
     m_settings->setValue("Personalize/mapX", m_mapX->currentData());
     m_settings->setValue("Personalize/mapY", m_mapY->currentData());
     m_settings->setValue("Personalize/animationDuration", m_animationTimeLasts->currentData());
@@ -178,5 +207,27 @@ void SettingsDialog::onButtonBoxClicked(QAbstractButton* button) {
     } else if (button == m_applyButton) {
         saveSettings();
         QMessageBox::information(this, tr("Info"), tr("Settings applied"));
+    }
+}
+
+void SettingsDialog::onComboBoxChanged(int index) {
+    if (index == 1) {
+        m_isPlayBackgroundMusic->setEnabled(true);
+        if (Constants::isPlayBGM) {
+            emit musicStateChanged(true);
+        } else {
+            emit musicStateChanged(false);
+        }
+    } else {
+        m_isPlayBackgroundMusic->setEnabled(false);
+        emit musicStateChanged(false);
+    }
+}
+
+void SettingsDialog::onMusicCheckBoxToggled(bool checked) {
+    if (checked) {
+        emit musicStateChanged(true);
+    } else {
+        emit musicStateChanged(false);
     }
 }

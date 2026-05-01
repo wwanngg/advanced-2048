@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Qt6 REQUIRED COMPONENTS Test Multimedia)
 
 qt_add_executable(test_advanced_2048_mainwindow
     test_mainwindow.cpp
@@ -52,9 +52,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_options(test_advanced_2048_settingsdialog PRIVATE --coverage)
 endif()
 
-target_link_libraries(test_advanced_2048_mainwindow PRIVATE Qt6::Test Qt6::Widgets)
-target_link_libraries(test_advanced_2048_keyboardhandler PRIVATE Qt6::Test Qt6::Widgets)
-target_link_libraries(test_advanced_2048_settingsdialog PRIVATE Qt6::Test Qt6::Widgets)
+target_link_libraries(test_advanced_2048_mainwindow PRIVATE Qt6::Test Qt6::Widgets Qt6::Multimedia)
+target_link_libraries(test_advanced_2048_keyboardhandler PRIVATE Qt6::Test Qt6::Widgets Qt6::Multimedia)
+target_link_libraries(test_advanced_2048_settingsdialog PRIVATE Qt6::Test Qt6::Widgets Qt6::Multimedia)
 
 add_test(NAME test_advanced_2048_mainwindow COMMAND test_advanced_2048_mainwindow)
 add_test(NAME test_advanced_2048_keyboardhandler COMMAND test_advanced_2048_keyboardhandler)
