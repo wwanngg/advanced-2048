@@ -6,6 +6,7 @@
 #include <QtCore>
 #include <QtTest>
 
+#include "../include/constants.h"
 #include "../include/settingsdialog.h"
 
 class TestSettingsDialog : public QObject {
@@ -18,6 +19,8 @@ private:
         QSettings settings("wwanngg", "2048advanced");
         settings.remove("Game/ColorTheme");
         settings.remove("Game/GameTheme");
+        settings.remove("Game/isPlayEffect");
+        settings.remove("Game/isPlayBGM");
         settings.remove("Personalize/mapX");
         settings.remove("Personalize/mapY");
         settings.remove("Personalize/animationDuration");
@@ -277,6 +280,142 @@ private slots:
 
         QSettings settings("wwanngg", "2048advanced");
         QCOMPARE(settings.value("Game/ColorTheme").toString(), QString("dark"));
+    }
+
+    void testIsPlayEffects_DefaultChecked() {
+        QVERIFY(m_dialog->m_isPlayEffects);
+        QVERIFY(m_dialog->m_isPlayEffects->isEnabled());
+        QVERIFY(m_dialog->m_isPlayEffects->isChecked());
+    }
+
+    void testIsPlayBackgroundMusic_InitiallyDisabled() {
+        QVERIFY(m_dialog->m_isPlayBackgroundMusic);
+        QVERIFY(!m_dialog->m_isPlayBackgroundMusic->isEnabled());
+    }
+
+    void testComboBoxChanged_ToCaixukun_EnablesBGM() {
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        QVERIFY(m_dialog->m_isPlayBackgroundMusic->isEnabled());
+    }
+
+    void testComboBoxChanged_AwayFromCaixukun_DisablesBGM() {
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        QVERIFY(m_dialog->m_isPlayBackgroundMusic->isEnabled());
+        m_dialog->m_gameThemeCombo->setCurrentIndex(0);
+        QVERIFY(!m_dialog->m_isPlayBackgroundMusic->isEnabled());
+    }
+
+    void testComboBoxChanged_ToCaixukun_EmitsMusicStateChanged() {
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(spy.at(0).at(0).toBool());
+    }
+
+    void testComboBoxChanged_ToCaixukun_BGMGloballyDisabled_EmitsFalse() {
+        bool original = Constants::isPlayBGM;
+        Constants::isPlayBGM = false;
+
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(!spy.at(0).at(0).toBool());
+
+        Constants::isPlayBGM = original;
+    }
+
+    void testComboBoxChanged_AwayFromCaixukun_EmitsMusicStateChanged() {
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->m_gameThemeCombo->setCurrentIndex(0);
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(!spy.at(0).at(0).toBool());
+    }
+
+    void testMusicCheckBoxToggled_Checked_EmitsTrue() {
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        m_dialog->m_isPlayBackgroundMusic->setChecked(false);
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->m_isPlayBackgroundMusic->setChecked(true);
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(spy.at(0).at(0).toBool());
+    }
+
+    void testMusicCheckBoxToggled_Unchecked_EmitsFalse() {
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->m_isPlayBackgroundMusic->setChecked(false);
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(!spy.at(0).at(0).toBool());
+    }
+
+    void testSaveSettings_SavesCheckBoxStates() {
+        m_dialog->m_isPlayEffects->setChecked(false);
+        m_dialog->m_isPlayBackgroundMusic->setChecked(true);
+        m_dialog->saveSettings();
+
+        QSettings settings("wwanngg", "2048advanced");
+        QCOMPARE(settings.value("Game/isPlayEffect").toBool(), false);
+        QCOMPARE(settings.value("Game/isPlayBGM").toBool(), true);
+    }
+
+    void testLoadSettings_LoadsCheckBoxStates() {
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/isPlayEffect", false);
+        settings.setValue("Game/isPlayBGM", true);
+
+        m_dialog->loadSettings();
+
+        QCOMPARE(m_dialog->m_isPlayEffects->isChecked(), false);
+        QCOMPARE(m_dialog->m_isPlayBackgroundMusic->isChecked(), true);
+    }
+
+    void testLoadSettings_BGMAndCaixukun_EmitsMusicStateChanged() {
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "caixukun");
+        settings.setValue("Game/isPlayBGM", true);
+
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->loadSettings();
+        QVERIFY(spy.count() >= 1);
+        QVERIFY(spy.at(spy.count() - 1).at(0).toBool());
+    }
+
+    void testLoadSettings_BGMDisabled_EmitsMusicStateFalse() {
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "caixukun");
+        settings.setValue("Game/isPlayBGM", false);
+
+        QSignalSpy spy(m_dialog, &SettingsDialog::musicStateChanged);
+        m_dialog->loadSettings();
+        QVERIFY(spy.count() >= 1);
+        QVERIFY(!spy.at(spy.count() - 1).at(0).toBool());
+    }
+
+    void testSaveThenLoad_RoundTrip_WithCheckBoxes() {
+        m_dialog->m_gameThemeCombo->setCurrentIndex(1);
+        m_dialog->m_isPlayEffects->setChecked(false);
+        m_dialog->m_isPlayBackgroundMusic->setChecked(true);
+        m_dialog->saveSettings();
+
+        delete m_dialog;
+        m_dialog = new SettingsDialog();
+
+        QCOMPARE(m_dialog->m_gameThemeCombo->currentData().toString(),
+                 QString("caixukun"));
+        QCOMPARE(m_dialog->m_isPlayEffects->isChecked(), false);
+        QCOMPARE(m_dialog->m_isPlayBackgroundMusic->isChecked(), true);
+        QVERIFY(m_dialog->m_isPlayBackgroundMusic->isEnabled());
+    }
+
+    void testOkButton_HasCorrectText() {
+        QVERIFY(m_dialog->m_okButton);
+        QCOMPARE(m_dialog->m_okButton->text(), QString("OK"));
+    }
+
+    void testCancelButton_ExistsAndHasCorrectText() {
+        QVERIFY(m_dialog->m_cancelButton);
+        QCOMPARE(m_dialog->m_cancelButton->text(), QString("Cancel"));
     }
 };
 

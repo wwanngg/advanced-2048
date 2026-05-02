@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPointer>
 #include <QPushButton>
 #include <QSettings>
 #include <QVector>
@@ -1403,6 +1404,163 @@ private slots:
         });
 
         m_window->onExit();
+    }
+
+    void testCreateMenuBar_ExitAction() {
+        QVERIFY(m_window->exitAction);
+        QCOMPARE(m_window->exitAction->text(), QString("Exit(&X)"));
+        QVERIFY(!m_window->exitAction->shortcut().isEmpty());
+    }
+
+    void testCreateMenuBar_SettingsShortcut() {
+        QVERIFY(m_window->m_settingsAction);
+        QCOMPARE(m_window->m_settingsAction->shortcut(),
+                 QKeySequence(Qt::CTRL | Qt::Key_Comma));
+    }
+
+    void testOnSettingsChanged_GameThemeConstant_Number() {
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "number");
+        settings.setValue("Game/ColorTheme", "system");
+        m_window->onSettingsChanged();
+        QCOMPARE(Constants::gameTheme, 0);
+    }
+
+    void testOnSettingsChanged_GameThemeConstant_Caixukun() {
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "caixukun");
+        settings.setValue("Game/ColorTheme", "system");
+        m_window->onSettingsChanged();
+        QCOMPARE(Constants::gameTheme, 1);
+        m_window->m_gametype = MainWindow::number;
+    }
+
+    void testOnSettingsChanged_GameThemeConstant_Chemistry() {
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "chemistry");
+        settings.setValue("Game/ColorTheme", "system");
+        m_window->onSettingsChanged();
+        QCOMPARE(Constants::gameTheme, 2);
+        m_window->m_gametype = MainWindow::number;
+    }
+
+    void testOnSettingsChanged_IsPlaySettings() {
+        bool origEffect = Constants::isPlayEffects;
+        bool origBGM = Constants::isPlayBGM;
+
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/isPlayEffect", false);
+        settings.setValue("Game/isPlayBGM", false);
+        settings.setValue("Game/ColorTheme", "system");
+        settings.setValue("Game/GameTheme", "number");
+        m_window->onSettingsChanged();
+
+        QCOMPARE(Constants::isPlayEffects, false);
+        QCOMPARE(Constants::isPlayBGM, false);
+
+        Constants::isPlayEffects = origEffect;
+        Constants::isPlayBGM = origBGM;
+    }
+
+    void testOnSettingsChanged_ChemistryTileRemoval_SurviveCount() {
+        m_window->m_gametype = MainWindow::number;
+        QVector<QVector<int>> board = {
+            {8, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+        setupBoard(board);
+        m_window->m_surviveCount[0][0] = 5;
+
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "chemistry");
+        settings.setValue("Game/ColorTheme", "system");
+        m_window->onSettingsChanged();
+
+        QCOMPARE(m_window->m_intMap[0][0], 0);
+        QCOMPARE(m_window->m_surviveCount[0][0], -1);
+        QPointer<QLabel> label = m_window->m_labelMap[0][0];
+        QVERIFY(label.isNull());
+        m_window->m_labelMap[0][0] = nullptr;
+        m_window->m_gametype = MainWindow::number;
+    }
+
+    void testOnSettingsChanged_ChemistryTileRemoval_ExceedsSuccess() {
+        m_window->m_gametype = MainWindow::number;
+        QVector<QVector<int>> board = {
+            {Constants::chemisrtySuccess + 1, 0, 0, 0},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0}};
+        setupBoard(board);
+        m_window->m_surviveCount[0][0] = 0;
+
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "chemistry");
+        settings.setValue("Game/ColorTheme", "system");
+        m_window->onSettingsChanged();
+
+        QCOMPARE(m_window->m_intMap[0][0], 0);
+        QCOMPARE(m_window->m_labelMap[0][0], nullptr);
+        m_window->m_gametype = MainWindow::number;
+    }
+
+    void testOnSettingsChanged_MusicControl_BGMEnabled_Caixukun() {
+        m_window->m_gametype = MainWindow::number;
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "caixukun");
+        settings.setValue("Game/ColorTheme", "system");
+        settings.setValue("Game/isPlayBGM", true);
+        m_window->onSettingsChanged();
+        QVERIFY(m_window->m_musicPlayer);
+        m_window->m_gametype = MainWindow::number;
+    }
+
+    void testOnSettingsChanged_MusicControl_StopWhenPlaying() {
+        m_window->m_gametype = MainWindow::number;
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "caixukun");
+        settings.setValue("Game/ColorTheme", "system");
+        settings.setValue("Game/isPlayBGM", true);
+        m_window->onSettingsChanged();
+
+        settings.setValue("Game/GameTheme", "number");
+        m_window->onSettingsChanged();
+        QVERIFY(m_window->m_musicPlayer);
+        m_window->m_gametype = MainWindow::number;
+    }
+
+    void testOnSettingsChanged_MusicControl_BGMDisabled() {
+        m_window->m_gametype = MainWindow::number;
+        QSettings settings("wwanngg", "2048advanced");
+        settings.setValue("Game/GameTheme", "number");
+        settings.setValue("Game/ColorTheme", "system");
+        settings.setValue("Game/isPlayBGM", false);
+        m_window->onSettingsChanged();
+        QVERIFY(m_window->m_musicPlayer);
+    }
+
+    void testInitMusicPlayer_PlayerAndOutputCreated() {
+        QVERIFY(m_window->m_musicPlayer);
+        QVERIFY(m_window->m_audioOutput);
+    }
+
+    void testInitMusicPlayer_SourceAndVolume() {
+        QCOMPARE(m_window->m_musicPlayer->source(), QUrl("qrc:///resources/music.mp3"));
+        QCOMPARE(m_window->m_audioOutput->volume(), 0.3f);
+    }
+
+    void testInitMusicPlayer_EndOfMediaLoop() {
+        m_window->m_musicPlayer->mediaStatusChanged(QMediaPlayer::EndOfMedia);
+        QVERIFY(m_window->m_musicPlayer);
+    }
+
+    void testOnMusicStateChanged_Play() {
+        m_window->onMusicStateChanged(true);
+        QVERIFY(m_window->m_musicPlayer);
+    }
+
+    void testOnMusicStateChanged_StopWhenPlaying() {
+        m_window->onMusicStateChanged(true);
+        m_window->onMusicStateChanged(false);
+        QVERIFY(m_window->m_musicPlayer);
     }
 };
 

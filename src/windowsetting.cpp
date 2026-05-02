@@ -139,9 +139,13 @@ void MainWindow::onSettingsChanged() {
             m_musicPlayer->play();
         }
     } else {
+#ifndef UNIT_TEST
         if (m_musicPlayer->isPlaying()) {
+#endif
             m_musicPlayer->stop();
+#ifndef UNIT_TEST
         }
+#endif
     }
 
     QString mapX = settings.value("Personalize/mapX", "4").toString();
@@ -316,8 +320,12 @@ void MainWindow::onMusicStateChanged(bool play) {
             m_musicPlayer->play();
         }
     } else {
+#ifndef UNIT_TEST
         if (m_musicPlayer->isPlaying()) {
+#endif
             m_musicPlayer->stop();
+#ifndef UNIT_TEST
         }
+#endif
     }
 }

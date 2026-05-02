@@ -3,11 +3,13 @@
 #include <QPauseAnimation>
 #include <QSequentialAnimationGroup>
 #include <QSignalSpy>
+#include <QSoundEffect>
 #include <QWidget>
 #include <QtCore>
 #include <QtTest>
 
 #include "../include/KeyboardHandler.h"
+#include "../include/constants.h"
 
 class TestKeyboardHandler : public QObject {
     Q_OBJECT
@@ -378,6 +380,47 @@ private slots:
         QSignalSpy spy(anim, &QSequentialAnimationGroup::finished);
         QTRY_VERIFY_WITH_TIMEOUT(spy.count() > 0, 2000);
         QTRY_COMPARE_WITH_TIMEOUT(callCount, 2, 1000);
+    }
+
+    void testStartAnimationEffectsDisabled() {
+        Constants::isPlayEffects = false;
+        m_handler->m_effect->setSource(QUrl());
+
+        m_handler->registerKeyAnimation(Qt::Key_Left,
+                                        [this]() { return createAnimation(); });
+
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+        m_handler->eventFilter(m_testWidget, &event);
+
+        QVERIFY(m_handler->m_effect->source().isEmpty());
+    }
+
+    void testStartAnimationThemeDefault() {
+        Constants::isPlayEffects = true;
+        Constants::gameTheme = 0;
+        m_handler->m_effect->setSource(QUrl());
+
+        m_handler->registerKeyAnimation(Qt::Key_Left,
+                                        [this]() { return createAnimation(); });
+
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+        m_handler->eventFilter(m_testWidget, &event);
+
+        QCOMPARE(m_handler->m_effect->source(), QUrl("qrc:///resources/effect.wav"));
+    }
+
+    void testStartAnimationThemeCaixukun() {
+        Constants::isPlayEffects = true;
+        Constants::gameTheme = 1;
+        m_handler->m_effect->setSource(QUrl());
+
+        m_handler->registerKeyAnimation(Qt::Key_Left,
+                                        [this]() { return createAnimation(); });
+
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+        m_handler->eventFilter(m_testWidget, &event);
+
+        QCOMPARE(m_handler->m_effect->source(), QUrl("qrc:///resources/kuneffect.wav"));
     }
 };
 

@@ -10,6 +10,7 @@ qt_add_executable(test_advanced_2048_mainwindow
     ${CMAKE_SOURCE_DIR}/src/KeyboardHandler.cpp
     ${CMAKE_SOURCE_DIR}/src/settingsdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/windowsetting.cpp
+    ${CMAKE_SOURCE_DIR}/resources.qrc
 )
 
 qt_add_executable(test_advanced_2048_keyboardhandler
@@ -22,6 +23,7 @@ qt_add_executable(test_advanced_2048_keyboardhandler
     ${CMAKE_SOURCE_DIR}/src/KeyboardHandler.cpp
     ${CMAKE_SOURCE_DIR}/src/settingsdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/windowsetting.cpp
+    ${CMAKE_SOURCE_DIR}/resources.qrc
 )
 
 qt_add_executable(test_advanced_2048_settingsdialog
@@ -34,6 +36,7 @@ qt_add_executable(test_advanced_2048_settingsdialog
     ${CMAKE_SOURCE_DIR}/src/KeyboardHandler.cpp
     ${CMAKE_SOURCE_DIR}/src/settingsdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/windowsetting.cpp
+    ${CMAKE_SOURCE_DIR}/resources.qrc
 )
 
 target_include_directories(test_advanced_2048_mainwindow PRIVATE ${CMAKE_SOURCE_DIR}/include)
