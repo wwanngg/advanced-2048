@@ -74,6 +74,7 @@ void KeyboardHandler::startAnimation(KeyAnimationInfo& info) {
             connect(info.currentAnimation, &QSequentialAnimationGroup::finished, this, &KeyboardHandler::onAnimationFinished);
 
             info.currentAnimation->start();
+#ifndef Q_OS_WASM
             if (Constants::isPlayEffects) {
                 if (Constants::gameTheme == 1) {
                     m_effect->setSource(QUrl("qrc:///resources/kuneffect.wav"));
@@ -83,6 +84,7 @@ void KeyboardHandler::startAnimation(KeyAnimationInfo& info) {
                     m_effect->play();
                 }
             }
+#endif
 
             info.isWaiting = false;
             m_isAnyAnimationRunning = true;

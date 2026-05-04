@@ -37,13 +37,27 @@ void MainWindow::onSettings() {
         m_settingsDialog = new SettingsDialog(this);
         connect(m_settingsDialog, &SettingsDialog::settingsChanged, this, &MainWindow::onSettingsChanged);
         connect(m_settingsDialog, &SettingsDialog::musicStateChanged, this, &MainWindow::onMusicStateChanged);
+#ifdef Q_OS_WASM
+        connect(m_settingsDialog, &QDialog::finished, this, [this]() {
+            activateWindow();
+            setFocus();
+        });
+#endif
     }
 
+#ifdef Q_OS_WASM
+    m_settingsDialog->open();
+#else
     m_settingsDialog->exec();
+#endif
 }
 
 void MainWindow::onSettingsChanged() {
+#ifdef Q_OS_WASM
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "wwanngg", "2048advanced");
+#else
     QSettings settings("wwanngg", "2048advanced");
+#endif
 
     QString theme = settings.value("Game/ColorTheme", "system").toString();
     if (theme == "dark") {
@@ -154,6 +168,7 @@ void MainWindow::onSettingsChanged() {
     int mapXnum = mapX.toInt();
     int mapYnum = mapY.toInt();
 
+#ifndef Q_OS_WASM
     if (isGameStart && (mapXnum * Constants::labelSize < Constants::windowSizeX || mapYnum * Constants::labelSize < Constants::windowSizeY)) {
 #ifndef UNIT_TEST
         QMessageBox::warning(this, "Warning", "This operation may cause some tiles to disappear");
@@ -163,6 +178,7 @@ void MainWindow::onSettingsChanged() {
         }
 #endif
     }
+#endif
 
     int oldRows = static_cast<int>(m_intMap.size());
     int oldCols = oldRows > 0 ? static_cast<int>(m_intMap[0].size()) : 0;
@@ -282,7 +298,11 @@ void MainWindow::onSettingsChanged() {
 }
 
 void MainWindow::loadSettings() {
+#ifdef Q_OS_WASM
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "wwanngg", "2048advanced");
+#else
     QSettings settings("wwanngg", "2048advanced");
+#endif
     onSettingsChanged();
     isGameStart = true;
 }

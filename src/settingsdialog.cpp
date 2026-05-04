@@ -4,7 +4,11 @@
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent)
+#ifdef Q_OS_WASM
+    , m_settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "wwanngg", "2048advanced", this)) {
+#else
     , m_settings(new QSettings("wwanngg", "2048advanced", this)) {
+#endif
     setWindowTitle(tr("Settings"));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setMinimumSize(400, 300);
@@ -206,7 +210,9 @@ void SettingsDialog::onButtonBoxClicked(QAbstractButton* button) {
         reject();
     } else if (button == m_applyButton) {
         saveSettings();
+#ifndef Q_OS_WASM
         QMessageBox::information(this, tr("Info"), tr("Settings applied"));
+#endif
     }
 }
 
